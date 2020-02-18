@@ -1,5 +1,3 @@
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
-
 public class TxHandler {
     public static void main(String[] args) {
         System.out.println("Testing 123");
@@ -14,7 +12,7 @@ public class TxHandler {
      */
     public TxHandler(UTXOPool utxoPool) {
         // IMPLEMENT THIS
-        this.utxoPool = utxoPool;
+        this.utxoPool = new UTXOPool(utxoPool);
     }
 
     /**
@@ -28,7 +26,30 @@ public class TxHandler {
      */
     public boolean isValidTx(Transaction tx) {
         // IMPLEMENT THIS
-        throw new NotImplementedException();
+        return checkOutputs(tx)
+            && checkSignatures(tx);
+    }
+    
+    private boolean checkOutputs(Transaction tx) {
+        for (int i = 0; i < tx.numInputs(); i++) {
+            Transaction.Input input = tx.getInput(i);
+            UTXO utxo = new UTXO(input.prevTxHash, input.outputIndex);
+            if (!this.utxoPool.contains(utxo))
+                return false;
+        }
+        return true;
+    }
+
+    private boolean checkSignatures(Transaction tx) {
+        for (int i = 0; i < tx.numInputs(); i++) {
+            Transaction.Input input = tx.getInput(i);
+            UTXO utxo = new UTXO(input.prevTxHash, input.outputIndex);
+            Transaction.Output output = this.utxoPool.getTxOutput(utxo);
+
+            if (!Crypto.verifySignature(output.address, input.prevTxHash, input.signature))
+                return false;
+        }
+        return true;
     }
 
     /**
@@ -38,7 +59,8 @@ public class TxHandler {
      */
     public Transaction[] handleTxs(Transaction[] possibleTxs) {
         // IMPLEMENT THIS
-        throw new NotImplementedException();
+
+        return new Transaction[0];
     }
 
 }
